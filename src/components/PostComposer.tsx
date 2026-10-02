@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import { ArrowRight, ImagePlus, Mic2, Upload, Video, X } from 'lucide-react'
-import type { CommunityPost, PostKind, Profile, Role } from '../data'
+import { roleLabel, type CommunityPost, type PostKind, type Profile, type Role } from '../data'
 import { saveMedia } from '../mediaStore'
 
 export function PostComposer({ author, role, onClose, onCreate }: { author: Profile; role: Role; onClose: () => void; onCreate: (post: CommunityPost) => void }) {
@@ -30,7 +30,7 @@ export function PostComposer({ author, role, onClose, onCreate }: { author: Prof
   const kinds:PostKind[]=['reel','story','photo','audio','video']
   return <ComposerFrame title="Share a story from where you are." eyebrow="ASTITVA · COMMUNITY STORIES" onClose={onClose}>
     <form onSubmit={event=>{void submit(event)}} className="space-y-4 px-5 py-5 sm:px-7">
-      <div className="rounded-xl bg-[#f6efdf] p-3 text-sm">Posting as <b>{author.name}</b> · {role}</div>
+      <div className="rounded-xl bg-[#f6efdf] p-3 text-sm">Posting as <b>{author.name}</b> · {roleLabel(role)}</div>
       <div><p className="mb-2 text-sm font-semibold">What would you like to share?</p><div className="flex flex-wrap gap-2" role="group" aria-label="Choose post format">{kinds.map(type=><button type="button" key={type} aria-pressed={kind===type} onClick={()=>{setKind(type);setMediaUrl('');setFilename('');setFile(null)}} className={`rounded-full px-4 py-2.5 text-sm font-semibold capitalize ${kind===type?'bg-indigo text-white':'border border-[#e2d9c9] bg-white text-[#736b60]'}`}>{type==='reel'?<><Video size={14}/> Reel</>:type==='story'?'Story':type==='photo'?<><ImagePlus size={14}/> Photo</>:type==='audio'?<><Mic2 size={14}/> Audio</>:'Video'}</button>)}</div></div>
       <label className="flex min-h-[165px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-[#c9b99e] bg-[#f4efe4] text-center">{mediaUrl?(mediaType==='audio'?<audio src={mediaUrl} controls/>:mediaType==='video'?<video src={mediaUrl} controls className="max-h-[220px] w-full object-contain"/>:<img src={mediaUrl} alt="Story upload preview" className="max-h-[220px] w-full object-cover"/>):<><span className="mb-2 flex h-10 w-10 items-center justify-center rounded-full bg-[#e6decd] text-indigo"><Upload size={17}/></span><span className="text-sm font-semibold">Choose {kind==='audio'?'an audio recording':kind==='photo'?'a photograph':kind==='story'?'a photo or short video':'a video'}</span><span className="mt-1 px-3 text-xs text-[#8c8071]">Your original media is stored in this browser for the demo.</span></>}<input type="file" accept={accept} required className="sr-only" onChange={event=>{const selected=event.target.files?.[0];if(selected){setFile(selected);setMediaUrl(URL.createObjectURL(selected));setFilename(selected.name);setError('')}}}/></label>
       {filename&&<p className="truncate text-xs text-[#82786c]">Selected: {filename}</p>}

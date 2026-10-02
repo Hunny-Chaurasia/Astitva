@@ -21,7 +21,7 @@
 /* Reference body ground: fine grid over maroon gradient */
 body {
   margin: 0;
-  min-width: 360px;
+  min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
   font-weight: 600;
@@ -110,6 +110,7 @@ input, select, textarea { font-size: 14px !important; }
 /* ---------- Bottom nav (reference: #2a0710, 6px striped top edge) ---------- */
 .sari-mobile-nav {
   min-height: 74px;
+  padding: 8px max(8px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)) !important;
   background: #2a0710 !important;
   border-top: 6px solid transparent !important;
   border-image: repeating-linear-gradient(45deg, #F6A800 0 4px, #D62828 4px 8px) 6 !important;
@@ -117,16 +118,18 @@ input, select, textarea { font-size: 14px !important; }
   color: #F8EBD0;
 }
 .sari-mobile-nav button {
-  min-width: 58px;
+  min-width: 0 !important;
+  width: 100%;
+  padding: 4px 1px !important;
+  gap: 3px !important;
   background: none;
   border: 0;
   color: #F8EBD0 !important;
-  font: 600 11px 'Noto Sans', sans-serif !important;
+  font: 600 clamp(9px, 2.7vw, 11px)/1.2 'Noto Sans', sans-serif !important;
   text-shadow: none;
 }
 .sari-mobile-nav button[aria-current="page"] { color: #F6C026 !important; background: none !important; border: 0; box-shadow: none; }
 .sari-mobile-nav button[aria-current="page"]::before { display: none; }
-@media (max-width: 640px) { .sari-mobile-nav button { padding: 6px 5px !important; } }
 
 /* ---------- Cream card (.c in reference) ---------- */
 .sari-panel {
