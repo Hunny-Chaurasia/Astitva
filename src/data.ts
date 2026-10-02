@@ -1,4 +1,4 @@
-export type Role = 'Artisan' | 'Buyer' | 'Student / Researcher' | 'Expert / Evaluator' | 'Cultural Knowledge Holder' | 'Institution / NGO' | 'Admin / Moderator'
+export type Role = 'Artisan' | 'Explorer' | 'Student / Researcher' | 'Expert / Evaluator' | 'Cultural Knowledge Holder' | 'Institution / NGO' | 'Admin / Moderator'
 export type AuthMode = 'login' | 'signup' | 'otp'
 export type Screen = 'feed' | 'dashboard' | 'marketplace' | 'map' | 'archive' | 'profile'
 export type PostKind = 'reel' | 'story' | 'photo' | 'audio' | 'video'
@@ -6,7 +6,8 @@ export type Profile = { id: string; name: string; handle: string; role: Role; bi
 export type ProductListing = { id: string; title: string; craft: string; qualities: string; heritage: string; price: string; location: string; stock: string; image: string; maker: string }
 export type CommunityPost = { id: string; kind: PostKind; mediaType?: 'image'|'video'|'audio'; mediaKey?: string; caption: string; craft: string; location: string; mediaUrl: string; filename: string; authorId: string; hashtags: string[]; createdAt: string; claimType: 'community' | 'heritage'; evidence?: string; verificationStatus: 'not-required' | 'pending' | 'verified' | 'needs-evidence' | 'rejected'; nativeTitle?: string; englishTitle?: string }
 
-export const roleOptions: Role[] = ['Artisan', 'Buyer', 'Student / Researcher', 'Expert / Evaluator', 'Cultural Knowledge Holder', 'Institution / NGO', 'Admin / Moderator']
+export const roleOptions: Role[] = ['Artisan', 'Explorer', 'Student / Researcher', 'Expert / Evaluator', 'Cultural Knowledge Holder', 'Institution / NGO', 'Admin / Moderator']
+export const roleLabel = (role: Role | 'Buyer') => role === 'Buyer' ? 'Explorer' : role
 export const photos = {
   mira: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=160&q=80',
   loom: 'https://images.unsplash.com/photo-1604881988758-f76ad2f7373f?auto=format&fit=crop&w=1200&q=85',
@@ -17,7 +18,7 @@ export const photos = {
 }
 export const profiles: Profile[] = [
   { id:'mira', name:'Mira Vankar', handle:'@miravankar', role:'Artisan', bio:'Ajrakh printer and natural-dye maker. My family has worked with wooden blocks and indigo in Kutch for generations.', region:'Dhamadka, Kutch · Gujarat', language:'Kutchi · Gujarati', avatar:photos.mira, verified:true, followers:1284, following:286 },
-  { id:'ananya', name:'Ananya Rao', handle:'@ananyarao', role:'Buyer', bio:'A curious traveller learning the stories behind the things I bring home.', region:'Bengaluru · Karnataka', language:'Kannada · English', avatar:photos.portrait1, verified:false, followers:418, following:301 },
+  { id:'ananya', name:'Ananya Rao', handle:'@ananyarao', role:'Explorer', bio:'A curious traveller learning the stories behind the things I bring home.', region:'Bengaluru · Karnataka', language:'Kannada · English', avatar:photos.portrait1, verified:false, followers:418, following:301 },
   { id:'aarav', name:'Aarav Mehta', handle:'@aaravfieldnotes', role:'Student / Researcher', bio:'Graduate researcher documenting community-led craft knowledge with consent and citations.', region:'Ahmedabad · Gujarat', language:'Gujarati · Hindi · English', avatar:photos.portrait2, verified:false, followers:236, following:178 },
   { id:'saira', name:'Saira Bano', handle:'@sairabano', role:'Expert / Evaluator', bio:'Ajrakh practitioner and community-appointed reviewer for Kutch block-printing traditions.', region:'Dhamadka, Kutch · Gujarat', language:'Kutchi · Gujarati · Hindi', avatar:photos.portrait2, verified:true, followers:2093, following:402 },
   { id:'ghafur', name:'Ghafur Haji', handle:'@ghafurji', role:'Cultural Knowledge Holder', bio:'Kutchi storyteller and language keeper. I review names and oral accounts from my community.', region:'Nirona · Kutch · Gujarat', language:'Kutchi · Gujarati', avatar:photos.portrait1, verified:true, followers:875, following:129 },
