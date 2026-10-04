@@ -7,7 +7,13 @@ export type ProductListing = { id: string; title: string; craft: string; qualiti
 export type CommunityPost = { id: string; kind: PostKind; mediaType?: 'image'|'video'|'audio'; mediaKey?: string; caption: string; craft: string; location: string; mediaUrl: string; filename: string; authorId: string; hashtags: string[]; createdAt: string; claimType: 'community' | 'heritage'; evidence?: string; verificationStatus: 'not-required' | 'pending' | 'verified' | 'needs-evidence' | 'rejected'; nativeTitle?: string; englishTitle?: string }
 
 export const roleOptions: Role[] = ['Artisan', 'Explorer', 'Student / Researcher', 'Expert / Evaluator', 'Cultural Knowledge Holder', 'Institution / NGO', 'Admin / Moderator']
-export const roleLabel = (role: Role | 'Buyer') => role === 'Buyer' ? 'Explorer' : role
+export const roleLabel = (role: Role | 'Buyer') => {
+  if (role === 'Buyer') return 'Explorer'
+  if (role === 'Student / Researcher') return 'Heritage Researcher'
+  if (role === 'Expert / Evaluator' || role === 'Cultural Knowledge Holder') return 'Community Reviewer'
+  if (role === 'Institution / NGO') return 'Community Organisation'
+  return role
+}
 export const photos = {
   mira: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=160&q=80',
   loom: 'https://images.unsplash.com/photo-1604881988758-f76ad2f7373f?auto=format&fit=crop&w=1200&q=85',
@@ -22,7 +28,7 @@ export const profiles: Profile[] = [
   { id:'aarav', name:'Aarav Mehta', handle:'@aaravfieldnotes', role:'Student / Researcher', bio:'Graduate researcher documenting community-led craft knowledge with consent and citations.', region:'Ahmedabad · Gujarat', language:'Gujarati · Hindi · English', avatar:photos.portrait2, verified:false, followers:236, following:178 },
   { id:'saira', name:'Saira Bano', handle:'@sairabano', role:'Expert / Evaluator', bio:'Ajrakh practitioner and community-appointed reviewer for Kutch block-printing traditions.', region:'Dhamadka, Kutch · Gujarat', language:'Kutchi · Gujarati · Hindi', avatar:photos.portrait2, verified:true, followers:2093, following:402 },
   { id:'ghafur', name:'Ghafur Haji', handle:'@ghafurji', role:'Cultural Knowledge Holder', bio:'Kutchi storyteller and language keeper. I review names and oral accounts from my community.', region:'Nirona · Kutch · Gujarat', language:'Kutchi · Gujarati', avatar:photos.portrait1, verified:true, followers:875, following:129 },
-  { id:'collective', name:'Kutch Craft Collective', handle:'@kutchcollective', role:'Institution / NGO', bio:'A community-led network connecting makers, cultural organisations and local visitors.', region:'Bhuj · Gujarat', language:'Gujarati · Hindi', avatar:photos.loom, verified:true, followers:3420, following:617 },
+  { id:'collective', name:'Kutch Craft Collective', handle:'Community page', role:'Institution / NGO', bio:'A community-led network connecting makers, cultural organisations and local visitors.', region:'Bhuj · Gujarat', language:'Gujarati · Hindi', avatar:photos.loom, verified:true, followers:3420, following:617 },
   { id:'archive', name:'Astitva Archive', handle:'@astitvaarchive', role:'Admin / Moderator', bio:'A community archive for living traditions, maker voices and place-based knowledge.', region:'India', language:'Regional languages', avatar:photos.pottery, verified:true, followers:8410, following:51 },
 ]
 export const profileForRole = (role: Role) => profiles.find(profile => profile.role === role) || profiles[1]

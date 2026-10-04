@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import {
   Archive, ArrowLeft, ArrowRight, BarChart3, Bell, BookOpen,
-  Home, Layers3, LogOut, Map, MapPin, Menu, MessageCircle, Search, ShieldCheck,
+  Home, LogOut, Map, MapPin, Menu, MessageCircle, Search, ShieldCheck,
   ShoppingBag, Upload, X, Plus, UserRound,
 } from 'lucide-react'
+import { CurtainMedia, CurtainToggle } from './components/CurtainMedia'
 import { CommunityPost, ProductListing, Profile, Role, Screen, AuthMode, roleLabel, roleOptions, photos, sampleProducts, profiles, profileForRole, sampleCommunityPosts } from './data'
 import { Feed } from './pages/FeedPage'
 import { Dashboard } from './pages/DashboardPage'
@@ -48,7 +49,8 @@ function App() {
   }
 
   const navigate = (next: Screen) => {
-    if (next === 'archive' && role !== 'Student / Researcher') { notify('Research tools are available to student and researcher accounts only.'); return }
+    if (next === 'dashboard' && role === 'Student / Researcher') next = 'archive'
+    if (next === 'archive' && role !== 'Student / Researcher') { notify('The heritage research workspace is available to researcher accounts only.'); return }
     if (next === 'profile') setProfilePageId(currentProfile.id)
     setScreen(next)
   }
@@ -66,7 +68,7 @@ function App() {
   const enterWorkspace = (nextRole = role) => {
     setRole(nextRole)
     setAuthenticated(true)
-    setScreen('dashboard')
+    setScreen(nextRole === 'Student / Researcher' ? 'archive' : 'dashboard')
     setAuthMode('login')
   }
 
@@ -95,7 +97,7 @@ function App() {
       email={email} setEmail={setEmail} password={password} setPassword={setPassword}
       otp={otp} setOtp={setOtp} onSubmit={handleAuth}
       onGuest={() => { setAuthenticated(true); setScreen('feed') }}
-      onDemo={demoRole => { setRole(demoRole); setAuthenticated(true); setScreen('dashboard') }} toast={toast} notify={notify}
+      onDemo={demoRole => { setRole(demoRole); setAuthenticated(true); setScreen(demoRole === 'Student / Researcher' ? 'archive' : 'dashboard') }} toast={toast} notify={notify}
     />
   }
 
@@ -108,8 +110,8 @@ function App() {
     text-ink
   "
 >
-    <div className="mx-auto flex min-h-screen max-w-[1600px]">
-      <Sidebar role={role} screen={screen} setScreen={navigate}       onLogout={() => { setAuthenticated(false); setRole('Explorer'); setAuthMode('login') }} />
+    <div className="mx-auto flex min-h-screen max-w-[1600px] lg:pl-[230px]">
+      <Sidebar role={role} screen={screen} setScreen={navigate} onLogout={() => { setAuthenticated(false); setRole('Explorer'); setAuthMode('login') }} />
       <main className="main-sari relative min-w-0 flex-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] lg:pb-0">
         <header className="sticky top-0 z-30 flex items-center justify-between border-b border-[#e9e3d9] bg-paper/95 px-4 py-3.5 backdrop-blur md:px-7">
           <div className="flex items-center gap-3">
@@ -120,7 +122,8 @@ function App() {
             <label className="hidden w-[220px] items-center gap-2 rounded-full border border-[#e8e1d7] bg-white px-3 py-2 text-[#958a7d] md:flex"><Search size={14}/><input value={query} onChange={e => setQuery(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') navigate(role==='Student / Researcher'?'archive':'feed') }} aria-label="Search stories and crafts; students can also search the research archive" className="w-full bg-transparent text-[11px] outline-none placeholder:text-[#a69b8e]" placeholder="Search stories, crafts, places"/></label>
             <button onClick={()=>setComposer('post')} className="header-create-button flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold"><Plus size={16}/><span className="hidden sm:inline">Create</span></button>
             <button aria-label="Notifications" aria-expanded={notificationsOpen} onClick={() => setNotificationsOpen(!notificationsOpen)} className="header-notifications-button relative rounded-full p-2"><Bell size={18}/>{!notificationsRead&&<span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-[#F6C026] ring-2 ring-[#3A0A14]"/>}</button>
-            <button onClick={()=>navigate('profile')} aria-label={`Open ${profileName}'s profile`} className="header-profile-button hidden items-center gap-2 rounded-full py-1 pl-1 pr-3 sm:flex"><img src={currentProfile.avatar} alt="" className="h-8 w-8 rounded-full object-cover"/><span className="text-sm font-semibold">{profileName}</span><UserRound size={15}/></button>
+            <CurtainToggle notify={notify}/>
+            <button onClick={()=>navigate('profile')} aria-label={`Open ${profileName}'s profile`} className="header-profile-button hidden items-center gap-2 rounded-full py-1 pl-1 pr-3 sm:flex"><CurtainMedia className="h-8 w-8 rounded-full" label={`${profileName} profile photo`}><img src={currentProfile.avatar} alt="" className="h-full w-full rounded-full object-cover"/></CurtainMedia><span className="text-sm font-semibold">{profileName}</span><UserRound size={15}/></button>
           </div>
           {menuOpen && <section id="mobile-account-menu" aria-label="Mobile account menu" className="mobile-account-menu absolute right-3 top-[calc(100%+0.5rem)] z-40 w-[min(320px,calc(100vw-1.5rem))] lg:hidden"><p className="mobile-account-menu__eyebrow">CURRENT ACCOUNT</p><p className="mobile-account-menu__role">{roleLabel(role)}</p><button type="button" onClick={() => { setAuthenticated(false); setRole('Explorer'); setMenuOpen(false); setAuthMode('login') }} className="mobile-account-menu__signout"><span>Sign out</span><LogOut size={17}/></button></section>}
         </header>
@@ -129,7 +132,7 @@ function App() {
 
         <div key={screen} data-screen={screen} className="sari-page page-transition mx-auto max-w-[1330px] px-4 py-5 md:px-7 lg:px-9">
           {screen === 'feed' && <Feed saved={saved} setSaved={setSaved} notify={notify} onNewPost={() => setComposer('post')} communityPosts={communityPosts} setScreen={navigate} query={query} setQuery={setQuery} profiles={visibleProfiles} followedIds={followedIds} onFollow={toggleFollow} onOpenProfile={openProfile} reactions={reactions} setReactions={setReactions} role={role} canVerify={currentProfile.verified&&['Expert / Evaluator','Cultural Knowledge Holder'].includes(role)} reviewVotes={reviewVotes} onReview={voteOnClaim} />}
-          {screen === 'dashboard' && <Dashboard role={role} onAddProduct={() => setComposer('product')} setScreen={setScreen} setQuery={setQuery} products={products} />}
+          {screen === 'dashboard' && <Dashboard role={role} onAddProduct={() => setComposer('product')} setScreen={navigate} setQuery={setQuery} products={products} />}
           {screen === 'marketplace' && <Marketplace notify={notify} products={products} setScreen={navigate} setQuery={setQuery} />}
           {screen === 'map' && <HeritageMap notify={notify} setScreen={navigate} setQuery={setQuery} />}
           {screen === 'archive' && role === 'Student / Researcher' && <ResearchArchive query={query} notify={notify} />}
@@ -153,25 +156,25 @@ function AuthPortal({ mode, setMode, role, setRole, email, setEmail, password, s
   return <div className="auth-page grid min-h-screen lg:grid-cols-[1.05fr_.95fr]">
     <section className="auth-hero relative hidden min-h-screen overflow-hidden text-white lg:flex lg:flex-col lg:justify-between lg:p-12 xl:p-16">
       <div className="absolute inset-0 opacity-25" style={{ backgroundImage: `linear-gradient(0deg,rgba(45,30,19,.8),rgba(45,30,19,.15)),url(${photos.loom})`, backgroundPosition: 'center', backgroundSize: 'cover' }}/>
-      <div className="relative flex items-center gap-3"><span className="flex h-11 w-11 items-center justify-center rounded-[15px] bg-[#a65839] font-serif text-[27px]">अ</span><span><span className="block font-serif text-2xl">Astitva</span><span className="text-[9px] tracking-[.25em] text-[#e1c5a3]">LIVING HERITAGE</span></span></div>
+      <div className="relative flex items-center gap-3"><span aria-hidden="true" className="auth-brand-mark sari-mark flex h-11 w-11 items-center justify-center rounded-[14px] font-serif text-[27px] text-white">अ</span><span><span className="block font-serif text-2xl">Astitva</span><span className="text-[9px] tracking-[.25em] text-[#e1c5a3]">LIVING HERITAGE</span></span></div>
       <div className="relative max-w-[600px] pb-12"><p className="mb-4 text-[10px] font-bold tracking-[.2em] text-[#e7bd8d]">CULTURE LIVES IN THE HANDS THAT MAKE IT</p><h1 className="font-serif text-5xl leading-[1.12] xl:text-[62px]">Every craft has a story.<br/><span className="text-[#e8c69f]">Every story has a home.</span></h1><p className="mt-5 max-w-[450px] text-sm leading-7 text-white/75">Meet the makers, hear the traditions, and support the living heritage of communities across India.</p><div className="mt-8 flex gap-3">{['Craft', 'Community', 'Continuity'].map((item, index) => <span key={item} className="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-[10px] text-white/85">0{index + 1} · {item}</span>)}</div></div>
       <p className="relative text-[10px] text-white/55">A regional-first home for living heritage.</p>
     </section>
     <section className="auth-content flex min-h-screen items-center justify-center px-5 py-10 sm:px-10">
       <div className="auth-card w-full max-w-[440px]">
-        <div className="auth-mobile-brand mb-9 flex items-center gap-3 lg:hidden"><span className="flex h-10 w-10 items-center justify-center rounded-[14px] font-serif text-2xl">अ</span><span className="font-serif text-2xl">Astitva</span></div>
+        <div className="auth-mobile-brand mb-9 flex items-center gap-3 lg:hidden"><span aria-hidden="true" className="auth-brand-mark sari-mark flex h-10 w-10 items-center justify-center rounded-[14px] font-serif text-2xl text-white">अ</span><span className="font-serif text-2xl">Astitva</span></div>
         <div className="mb-7"><p className="text-[9px] font-bold tracking-[.18em] text-[#a48766]">{mode === 'signup' ? 'JOIN THE COMMUNITY' : mode === 'otp' ? 'SECURE YOUR ACCOUNT' : 'WELCOME BACK'}</p><h2 className="mt-2 font-serif text-[34px] leading-tight">{mode === 'signup' ? 'Create your account' : mode === 'otp' ? 'Check your inbox' : 'Come on in.'}</h2><p className="mt-2 text-[12px] leading-5 text-[#817568]">{mode === 'otp' ? `We sent a six-digit code to ${email || 'your email address'}.` : 'Discover the people and traditions keeping culture alive.'}</p></div>
         {mode !== 'otp' && <div className="mb-5 grid grid-cols-2 rounded-full bg-[#eee9df] p-1"><button onClick={() => setMode('login')} className={`rounded-full py-2.5 text-[11px] font-semibold ${mode === 'login' ? 'bg-white text-ink shadow-sm' : 'text-[#86796b]'}`}>Sign in</button><button onClick={() => {setRole('Explorer');setMode('signup')}} className={`rounded-full py-2.5 text-[11px] font-semibold ${mode === 'signup' ? 'bg-white text-ink shadow-sm' : 'text-[#86796b]'}`}>Create account</button></div>}
         <form onSubmit={onSubmit} className="space-y-4">
           {mode !== 'otp' ? <>
             <label className="block"><span className="mb-1.5 block text-[10px] font-semibold text-[#62564a]">Email address</span><input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" className="w-full rounded-xl border border-[#e6ded2] bg-white px-4 py-3 text-xs outline-none transition focus:border-[#b58a65]"/></label>
             <label className="block"><span className="mb-1.5 flex justify-between text-[10px] font-semibold text-[#62564a]">Password {mode === 'login' && <button type="button" onClick={() => notify('Password recovery needs the Astitva email service, which is not connected in this demo.')} className="font-medium text-rust">Forgot password?</button>}</span><input type="password" required minLength={mode === 'signup' ? 8 : undefined} value={password} onChange={e => setPassword(e.target.value)} placeholder={mode === 'signup' ? '8+ characters, uppercase, number, symbol' : 'Enter your password'} className="w-full rounded-xl border border-[#e6ded2] bg-white px-4 py-3 text-xs outline-none transition focus:border-[#b58a65]"/></label>
-            {mode === 'signup' && <><label className="block"><span className="mb-1.5 block text-[10px] font-semibold text-[#62564a]">Your primary role</span><select value={role} onChange={e => setRole(e.target.value as Role)} className="w-full rounded-xl border border-[#e6ded2] bg-white px-4 py-3 text-xs outline-none focus:border-[#b58a65]">{roleOptions.filter(option=>['Explorer','Artisan','Student / Researcher'].includes(option)).map(option => <option key={option} value={option}>{roleLabel(option)}</option>)}</select></label><p className="flex items-start gap-2 text-[9px] leading-4 text-[#978a7b]"><ShieldCheck size={13} className="mt-0.5 shrink-0"/>Expert, knowledge-holder, institution and moderator access is assigned by an authorized admin.</p></>}
+            {mode === 'signup' && <><label className="block"><span className="mb-1.5 block text-[10px] font-semibold text-[#62564a]">Your primary role</span><select value={role} onChange={e => setRole(e.target.value as Role)} className="w-full rounded-xl border border-[#e6ded2] bg-white px-4 py-3 text-xs outline-none focus:border-[#b58a65]">{roleOptions.filter(option=>['Explorer','Artisan','Student / Researcher'].includes(option)).map(option => <option key={option} value={option}>{roleLabel(option)}</option>)}</select></label><p className="flex items-start gap-2 text-[9px] leading-4 text-[#978a7b]"><ShieldCheck size={13} className="mt-0.5 shrink-0"/>Community reviewer, organisation and moderator access is assigned by an authorised admin.</p></>}
           </> : <><label className="block"><span className="mb-1.5 block text-[10px] font-semibold text-[#62564a]">6-digit email code</span><input inputMode="numeric" autoComplete="one-time-code" maxLength={6} required value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" className="w-full rounded-xl border border-[#e6ded2] bg-white px-4 py-4 text-center font-mono text-xl tracking-[.5em] outline-none focus:border-[#b58a65]"/><button type="button" onClick={() => notify('Email delivery is not connected in this demo, so a new code cannot be sent.')} className="mt-2 text-[10px] font-semibold text-rust">Resend code</button></label><p className="rounded-xl bg-[#f0ece4] p-3 text-[10px] leading-5 text-[#817568]">For this frontend preview, any six digits complete the demo flow. Email delivery and expiry enforcement require the backend.</p></>}
           <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-full bg-rust py-3.5 text-[11px] font-semibold text-white transition hover:bg-[#713a27]">{mode === 'otp' ? 'Verify email' : mode === 'signup' ? 'Create account' : 'Sign in'}<ArrowRight size={14}/></button>
         </form>
         {mode === 'otp' && <button onClick={() => setMode('signup')} className="mt-3 flex w-full items-center justify-center gap-1 text-[10px] text-[#807568]"><ArrowLeft size={12}/> Back to account details</button>}
-        {mode === 'login' && <><div className="my-5 flex items-center gap-3 text-[9px] text-[#a79b8e]"><span className="h-px flex-1 bg-[#e7e0d5]"/>OR CONTINUE WITH EMAIL CODE<span className="h-px flex-1 bg-[#e7e0d5]"/></div><button onClick={() => email ? setMode('otp') : notify('Enter your email address first')} className="flex w-full items-center justify-center gap-2 rounded-full border border-[#dfd5c7] bg-white py-3 text-[11px] font-semibold text-[#71573e]"><MailIcon/>Sign in with a one-time code</button><div className="mt-5 rounded-2xl border border-[#e7dfd3] bg-white p-4"><p className="text-[10px] font-bold text-[#57483a]">Try a demo account</p><p className="mt-1 text-[9px] text-[#817568]">Preview each role and its access in Astitva.</p><div className="mt-3 grid grid-cols-2 gap-2">{(['Artisan','Student / Researcher','Explorer','Cultural Knowledge Holder','Expert / Evaluator','Institution / NGO','Admin / Moderator'] as Role[]).map((demoRole, index) => <button key={demoRole} onClick={() => onDemo(demoRole)} className="rounded-xl bg-[#f5f1e8] px-2 py-2.5 text-[9px] font-semibold text-[#71573e] hover:bg-[#eee5d7]">{['Mira · Maker','Aarav · Researcher','Ananya · Explorer','Ghafur · Knowledge holder','Saira · Expert reviewer','Kutch · Institution','Astitva · Admin'][index]}</button>)}</div><p className="mt-2 text-[8px] text-[#9b8d7d]">Demo profiles use sample data. No password needed.</p></div></>}
+        {mode === 'login' && <><div className="my-5 flex items-center gap-3 text-[9px] text-[#a79b8e]"><span className="h-px flex-1 bg-[#e7e0d5]"/>OR CONTINUE WITH EMAIL CODE<span className="h-px flex-1 bg-[#e7e0d5]"/></div><button onClick={() => email ? setMode('otp') : notify('Enter your email address first')} className="flex w-full items-center justify-center gap-2 rounded-full border border-[#dfd5c7] bg-white py-3 text-[11px] font-semibold text-[#71573e]"><MailIcon/>Sign in with a one-time code</button><div className="mt-5 rounded-2xl border border-[#e7dfd3] bg-white p-4"><p className="text-[10px] font-bold text-[#57483a]">Try a demo account</p><p className="mt-1 text-[9px] text-[#817568]">Preview each workspace in Astitva.</p><div className="mt-3 grid grid-cols-2 gap-2">{(['Artisan','Student / Researcher','Explorer','Cultural Knowledge Holder','Institution / NGO','Admin / Moderator'] as Role[]).map(demoRole => <button key={demoRole} onClick={() => onDemo(demoRole)} className="rounded-xl bg-[#f5f1e8] px-2 py-2.5 text-[9px] font-semibold text-[#6b5139]">{roleLabel(demoRole)}</button>)}</div></div></>}
         <p className="mt-6 text-center text-[9px] leading-5 text-[#a09485]">By continuing, you agree to our community guidelines and privacy policy.</p>
         <button onClick={onGuest} className="mt-5 w-full text-center text-[10px] font-semibold text-[#976943]">Explore the public feed first <ArrowRight className="ml-1 inline" size={12}/></button>
         {toast && <p role="status" className="mt-4 rounded-xl bg-[#3e3025] px-4 py-3 text-center text-[10px] text-white">{toast}</p>}
@@ -183,39 +186,40 @@ function AuthPortal({ mode, setMode, role, setRole, email, setEmail, password, s
 function MailIcon() { return <MessageCircle size={15}/> }
 
 function Sidebar({ role, screen, setScreen, onLogout }: { role: Role; screen: Screen; setScreen: (screen: Screen) => void; onLogout: () => void }) {
+  const researcher = role === 'Student / Researcher'
   const nav = [
     { title: 'Discover feed', icon: Home, screen: 'feed' as Screen },
-    { title: 'My dashboard', icon: BarChart3, screen: 'dashboard' as Screen },
+    ...(!researcher ? [{ title: 'My dashboard', icon: BarChart3, screen: 'dashboard' as Screen }] : []),
     { title: 'Heritage map', icon: Map, screen: 'map' as Screen },
     { title: 'Marketplace', icon: ShoppingBag, screen: 'marketplace' as Screen },
-    ...(role==='Student / Researcher'?[{ title: 'Research studio', icon: Archive, screen: 'archive' as Screen }]:[]),
+    ...(researcher ? [{ title: 'Research workspace', icon: Archive, screen: 'archive' as Screen }] : []),
     { title: 'My profile', icon: UserRound, screen: 'profile' as Screen },
   ]
-  return <aside className="sari-sidebar sticky top-0 z-10 hidden h-screen w-[230px] shrink-0 flex-col overflow-hidden border-r border-[#e9e3d9] bg-[#fbfaf6] px-5 py-5 lg:flex">
+  return <aside className="sari-sidebar fixed inset-y-0 left-0 z-40 hidden h-screen h-[100dvh] w-[230px] shrink-0 flex-col overflow-hidden border-r border-[#e9e3d9] bg-[#fbfaf6] px-5 py-5 lg:flex">
     <button onClick={() => setScreen('feed')} aria-label="Astitva home: open Discover feed" className="mb-4 flex items-center gap-3 text-left"><span className="sari-mark flex h-10 w-10 items-center justify-center rounded-[14px] font-serif text-2xl text-white">अ</span><span><span className="block font-serif text-[22px] font-semibold leading-5 text-[#f6c026]">अस्तित्व</span><span className="mt-1 block text-[8px] tracking-[.12em] text-[#f1ddbd]">हर कहानी एक धागे से जुड़ी है</span></span></button>
     <p className="mb-2 px-3 text-[9px] font-bold tracking-[.18em] text-[#aa9e90]">EXPLORE</p>
-    <nav className="space-y-1">{nav.map(item => <button key={item.title} onClick={() => setScreen(item.screen)} className={`sari-nav-item flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[12px] transition ${screen === item.screen ? 'bg-[#f1e8dc] font-semibold text-[#65442c]' : 'text-[#776d62] hover:bg-[#f5f1ea]'}`}><item.icon size={17} strokeWidth={1.7}/>{item.title}</button>)}</nav>
+    <nav className="space-y-1">{nav.map(item => <button key={item.title} onClick={() => setScreen(item.screen)} className={`sari-nav-item flex w-full min-w-0 items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[12px] transition ${screen === item.screen ? 'bg-[#f1e8dc] font-semibold text-[#65442c]' : 'text-[#776d62] hover:bg-[#f5f1ea]'}`}><item.icon className="shrink-0" size={17} strokeWidth={1.7}/><span className="min-w-0 flex-1">{item.title}</span></button>)}</nav>
     <div className="my-5 border-t border-[#e9e3d9]"/><p className="mb-2 px-3 text-[9px] font-bold tracking-[.18em] text-[#aa9e90]">WORKSPACE</p>
     <p className="mb-2 rounded-xl bg-[#f7f3ec] px-3 py-2.5 text-xs text-[#6b5139]">Signed in as <b>{roleLabel(role)}</b>. Role changes require an authorized admin.</p>
-    <button onClick={() => setScreen('dashboard')} className="mt-2 flex items-center gap-3 rounded-xl bg-[#f7f3ec] px-3 py-2.5 text-left text-[12px] font-medium text-[#6b5139]"><Layers3 size={17}/>Open role dashboard<ArrowRight className="ml-auto" size={13}/></button>
     <button onClick={onLogout} className="mt-auto border-t border-[#e9e3d9] pt-4 text-left text-sm font-semibold text-[#f8ebd0] hover:text-[#f6c026]">Sign out</button>
   </aside>
 }
 
 function screenTitle(screen: Screen, role: Role) {
   if (screen === 'feed') return 'The Heritage Thread Board'
-  if (screen === 'dashboard') return role === 'Artisan' ? 'Creator & sales studio' : role === 'Explorer' ? 'Your culture passport' : role === 'Student / Researcher' ? 'Research workspace' : role === 'Expert / Evaluator' || role === 'Cultural Knowledge Holder' ? 'Community review desk' : role === 'Institution / NGO' ? 'Community impact hub' : 'Platform operations'
+  if (screen === 'dashboard') return role === 'Artisan' ? 'Creator & sales studio' : role === 'Explorer' ? 'Your culture passport' : role === 'Student / Researcher' ? 'Heritage research workspace' : role === 'Expert / Evaluator' || role === 'Cultural Knowledge Holder' ? 'Community review desk' : role === 'Institution / NGO' ? 'Community impact hub' : 'Platform operations'
   if (screen === 'marketplace') return 'Find a piece with a story.'
   if (screen === 'map') return 'Explore heritage by place.'
-  if (screen === 'archive') return 'Research studio and living archive.'
+  if (screen === 'archive') return 'Heritage research workspace.'
   return 'Your Astitva profile.'
 }
 
 function MobileNav({ screen, setScreen, role }: { screen: Screen; setScreen: (screen: Screen) => void; role: Role }) {
+  const researcher = role === 'Student / Researcher'
   const options: { title: string; icon: typeof Home; screen: Screen }[] = [
-    { title: 'Feed', icon: Home, screen: 'feed' }, { title: 'Dashboard', icon: BarChart3, screen: 'dashboard' },
+    { title: 'Feed', icon: Home, screen: 'feed' }, ...(researcher ? [] : [{ title: 'Dashboard', icon: BarChart3, screen: 'dashboard' as Screen }]),
     { title: 'Map', icon: Map, screen: 'map' }, { title: 'Shop', icon: ShoppingBag, screen: 'marketplace' },
-    ...(role==='Student / Researcher'?[{title:'Research',icon:BookOpen,screen:'archive' as Screen}]:[]),
+    ...(researcher ? [{ title: 'Research', icon: BookOpen, screen: 'archive' as Screen }] : []),
     { title: 'Profile', icon: UserRound, screen: 'profile' },
   ]
   return <nav aria-label="Main navigation" className="sari-mobile-nav fixed inset-x-0 bottom-0 z-40 grid grid-flow-col auto-cols-fr border-t px-2 py-2 backdrop-blur lg:hidden" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}>{options.map(item => <button key={item.title} type="button" onClick={() => setScreen(item.screen)} aria-current={screen === item.screen ? 'page' : undefined} className={`relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-lg px-0 py-1 text-[8px] ${screen === item.screen ? 'font-semibold text-rust' : 'text-[#75665f]'}`}><item.icon size={19}/>{item.title}</button>)}</nav>
@@ -252,7 +256,7 @@ function ProductComposer({ maker, onClose, onCreate }: { maker:string; onClose: 
         </div>
         <div className="space-y-4">
           <label className="group flex min-h-[210px] cursor-pointer flex-col items-center justify-center overflow-hidden rounded-2xl border border-dashed border-[#c9b99e] bg-[#f4efe4] text-center transition hover:bg-[#f0e8d8]">
-            {imageUrl ? <img src={imageUrl} alt="Product preview" className="h-[210px] w-full object-cover"/> : <><span className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[#e6decd] text-indigo"><Upload size={18}/></span><span className="text-[10px] font-semibold">Add a product photograph</span><span className="mt-1 px-4 text-[9px] text-[#8c8071]">Show the texture, detail, and scale of your work</span></>}
+            {imageUrl ? <CurtainMedia className="h-[210px] w-full curtain-media--window" label="product preview"><img src={imageUrl} alt="Product preview" className="h-full w-full object-cover"/></CurtainMedia> : <><span className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-[#e6decd] text-indigo"><Upload size={18}/></span><span className="text-[10px] font-semibold">Add a product photograph</span><span className="mt-1 px-4 text-[9px] text-[#8c8071]">Show the texture, detail, and scale of your work</span></>}
             <input type="file" accept="image/*" required className="sr-only" onChange={e=>{const file=e.target.files?.[0]; if(file){setImageUrl(URL.createObjectURL(file));setImageName(file.name)}}}/>
           </label>
           {imageName && <p className="-mt-3 truncate text-[8px] text-[#82786c]">{imageName}</p>}
